@@ -6,6 +6,7 @@ import {
   Typography,
   Container,
   Box,
+  Grid,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 const faqData = [

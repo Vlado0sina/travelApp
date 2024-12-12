@@ -15,6 +15,7 @@ import {
   Step,
   StepLabel,
   Tooltip,
+  Grid,
 } from "@mui/material";
 import { AuthContext } from "./AuthContext";
 import { db } from "./firebase";
@@ -64,14 +65,26 @@ const BookingForm = ({ resetBookingForm }) => {
         .date()
         .min(today, "You cannot select a past date")
         .required("Enter travel date"),
+      totalPassengers: yup
+        .number()
+        .test(
+          "total-passengers-check",
+          "Total number of adults and children must be 30 or less",
+          function () {
+            const { passengers, childCount } = this.parent;
+            return (Number(passengers) || 0) + (Number(childCount) || 0) <= 30;
+          }
+        ),
       passengers: yup
         .number()
         .min(1)
-        .max(30, "No more than 30 passengers")
+        .max(30, "No more than 30 adults")
         .required("Enter the number of passengers"),
       childCount: yup
         .number()
+        .typeError("Please enter a valid number of children ")
         .min(0, "The number of children cannot be less than 0")
+        .max(30, "No more than 30 children")
         .nullable(),
       ...Array.from({ length: 10 }).reduce(
         (acc, _, index) => ({
@@ -173,7 +186,7 @@ const BookingForm = ({ resetBookingForm }) => {
   //         <Typography variant="h5" mb={2}>
   //           Please sign in to book a ticket
   //         </Typography>
-  //       </Box>
+  //       </Grid>
   //     );
   //   }
   return (
@@ -189,164 +202,178 @@ const BookingForm = ({ resetBookingForm }) => {
 
         {step === 0 && (
           <form onSubmit={formik.handleSubmit}>
-            <Box mb={3}>
-              <TextField
-                fullWidth
-                name="firstName"
-                type="text"
-                label="First Name"
-                value={formik.values.firstName}
-                onChange={formik.handleChange}
-                error={
-                  formik.touched.firstName && Boolean(formik.errors.firstName)
-                }
-                helperText={formik.touched.firstName && formik.errors.firstName}
-                variant="outlined"
-                size="small"
-                disabled
-              />
-            </Box>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  name="firstName"
+                  type="text"
+                  label="First Name"
+                  value={formik.values.firstName}
+                  onChange={formik.handleChange}
+                  error={
+                    formik.touched.firstName && Boolean(formik.errors.firstName)
+                  }
+                  helperText={
+                    formik.touched.firstName && formik.errors.firstName
+                  }
+                  variant="outlined"
+                  size="small"
+                  disabled
+                />
+              </Grid>
 
-            <Box mb={3}>
-              <TextField
-                fullWidth
-                name="lastName"
-                type="text"
-                label="Last Name"
-                value={formik.values.lastName}
-                onChange={formik.handleChange}
-                error={
-                  formik.touched.lastName && Boolean(formik.errors.lastName)
-                }
-                helperText={formik.touched.lastName && formik.errors.lastName}
-                variant="outlined"
-                size="small"
-                disabled
-              />
-            </Box>
-            <Box mb={3}>
-              <TextField
-                fullWidth
-                name="email"
-                type="email"
-                label="Email"
-                value={formik.values.email}
-                onChange={formik.handleChange}
-                error={formik.touched.email && Boolean(formik.errors.email)}
-                helperText={formik.touched.email && formik.errors.email}
-                variant="outlined"
-                size="small"
-                disabled
-              />
-            </Box>
-            <Box mb={3}>
-              <TextField
-                fullWidth
-                name="phone"
-                type="text"
-                label="Phone number"
-                value={formik.values.phone}
-                onChange={formik.handleChange}
-                error={formik.touched.phone && Boolean(formik.errors.phone)}
-                helperText={formik.touched.phone && formik.errors.phone}
-                variant="outlined"
-                size="small"
-                disabled
-              />
-            </Box>
-            <Box mb={3}>
-              <TextField
-                fullWidth
-                select
-                name="route"
-                label="Route"
-                value={formik.values.route}
-                onChange={formik.handleChange}
-                error={formik.touched.route && Boolean(formik.errors.route)}
-                helperText={formik.touched.route && formik.errors.route}
-                variant="outlined"
-                size="small"
-              >
-                <MenuItem value="Mallaig - Eigg">Mallaig - Eigg</MenuItem>
-                <MenuItem value="Mallaig - Rum">Mallaig - Rum</MenuItem>
-                <MenuItem value="Mallaig - Muck">Mallaig - Muck</MenuItem>
-                <MenuItem value="Mallaig - Muck">Eigg - Muck</MenuItem>
-                <MenuItem value="Mallaig - Muck">Eigg - Rum</MenuItem>
-              </TextField>
-            </Box>
-            <Box mb={3}>
-              <TextField
-                fullWidth
-                select
-                name="ticketType"
-                label="Ticket Type"
-                value={ticketType}
-                onChange={handleTicketTypeChange}
-                variant="outlined"
-                size="small"
-              >
-                <MenuItem value="return">Return</MenuItem>
-                <MenuItem value="single">Single</MenuItem>
-              </TextField>
-            </Box>
-
-            <Box mb={3}>
-              <TextField
-                fullWidth
-                name="date"
-                type="date"
-                label="Date of travel"
-                value={formik.values.date}
-                onChange={formik.handleChange}
-                error={formik.touched.date && Boolean(formik.errors.date)}
-                helperText={formik.touched.date && formik.errors.date}
-                InputLabelProps={{ shrink: true }}
-                variant="outlined"
-                size="small"
-              />
-            </Box>
-            <>
-              <Box mb={3}>
+              <Grid item xs={12} sm="6">
+                <TextField
+                  fullWidth
+                  name="lastName"
+                  type="text"
+                  label="Last Name"
+                  value={formik.values.lastName}
+                  onChange={formik.handleChange}
+                  error={
+                    formik.touched.lastName && Boolean(formik.errors.lastName)
+                  }
+                  helperText={formik.touched.lastName && formik.errors.lastName}
+                  variant="outlined"
+                  size="small"
+                  disabled
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  name="email"
+                  type="email"
+                  label="Email"
+                  value={formik.values.email}
+                  onChange={formik.handleChange}
+                  error={formik.touched.email && Boolean(formik.errors.email)}
+                  helperText={formik.touched.email && formik.errors.email}
+                  variant="outlined"
+                  size="small"
+                  disabled
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  name="phone"
+                  type="text"
+                  label="Phone number"
+                  value={formik.values.phone}
+                  onChange={formik.handleChange}
+                  error={formik.touched.phone && Boolean(formik.errors.phone)}
+                  helperText={formik.touched.phone && formik.errors.phone}
+                  variant="outlined"
+                  size="small"
+                  disabled
+                />
+              </Grid>
+              <Grid item xs={12}>
                 <TextField
                   fullWidth
                   select
-                  name="hasChild"
-                  label="Do you have a child?"
-                  value={formik.values.hasChild || "no"}
+                  name="route"
+                  label="Route"
+                  value={formik.values.route}
                   onChange={formik.handleChange}
+                  error={formik.touched.route && Boolean(formik.errors.route)}
+                  helperText={formik.touched.route && formik.errors.route}
                   variant="outlined"
                   size="small"
                 >
-                  <MenuItem value="no">No</MenuItem>
-                  <MenuItem value="yes">Yes</MenuItem>
+                  <MenuItem value="Mallaig - Eigg">Mallaig - Eigg</MenuItem>
+                  <MenuItem value="Mallaig - Rum">Mallaig - Rum</MenuItem>
+                  <MenuItem value="Mallaig - Muck">Mallaig - Muck</MenuItem>
+                  <MenuItem value="Mallaig - Muck">Eigg - Muck</MenuItem>
+                  <MenuItem value="Mallaig - Muck">Eigg - Rum</MenuItem>
                 </TextField>
-              </Box>
-              {/* //{formik.values.hasChild === "yes" */}
-              {formik?.values && (
-                <>
-                  <Box>
-                    <TextField
-                      fullWidth
-                      name="childCount"
-                      type="number"
-                      label="Number of children"
-                      value={formik.values.childCount}
-                      onChange={formik.handleChange}
-                      error={
-                        formik.touched.childCount &&
-                        Boolean(formik.errors.childCount)
-                      }
-                      helperText={
-                        formik.touched.childCount && formik.errors.childCount
-                      }
-                      variant="outlined"
-                      size="small"
-                    />
-                  </Box>
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  select
+                  name="ticketType"
+                  label="Ticket Type"
+                  value={ticketType}
+                  onChange={handleTicketTypeChange}
+                  variant="outlined"
+                  size="small"
+                >
+                  <MenuItem value="return">Return</MenuItem>
+                  <MenuItem value="single">Single</MenuItem>
+                </TextField>
+              </Grid>
 
-                  {[...Array(Number(formik.values.childCount) || 0)].map(
-                    (_, index) => (
-                      <Box mb={3} key={index}>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  name="date"
+                  type="date"
+                  label="Date of travel"
+                  value={formik.values.date}
+                  onChange={formik.handleChange}
+                  error={formik.touched.date && Boolean(formik.errors.date)}
+                  helperText={formik.touched.date && formik.errors.date}
+                  InputLabelProps={{ shrink: true }}
+                  variant="outlined"
+                  size="small"
+                />
+              </Grid>
+              <>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    select
+                    name="hasChild"
+                    label="Do you have a child?"
+                    value={formik.values.hasChild || "no"}
+                    onChange={formik.handleChange}
+                    variant="outlined"
+                    size="small"
+                  >
+                    <MenuItem value="no">No</MenuItem>
+                    <MenuItem value="yes">Yes</MenuItem>
+                  </TextField>
+                </Grid>
+                {/* {formik?.values && ( */}
+                {formik.values.hasChild === "yes" && (
+                  <>
+                    <Grid item xs={12}>
+                      <TextField
+                        fullWidth
+                        name="childCount"
+                        type="number"
+                        label="Number of children"
+                        value={formik.values.childCount}
+                        // onChange={formik.handleChange}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          const numericValue = Number(value);
+                          if (numericValue >= 0 || value === "") {
+                            formik.setFieldValue("childCount", value);
+                          }
+                        }}
+                        error={
+                          formik.touched.childCount &&
+                          Boolean(formik.errors.childCount)
+                        }
+                        helperText={
+                          formik.touched.childCount && formik.errors.childCount
+                        }
+                        variant="outlined"
+                        size="small"
+                        inputProps={{ min: 0, max: 30 }}
+                      />
+                    </Grid>
+
+                    {[
+                      ...Array(
+                        Math.max(0, Number(formik.values.childCount) || 0)
+                      ),
+                    ].map((_, index) => (
+                      <Grid item xs={12} key={index}>
                         <TextField
                           fullWidth
                           name={`childAge_${index}`}
@@ -356,82 +383,97 @@ const BookingForm = ({ resetBookingForm }) => {
                           onChange={formik.handleChange}
                           variant="outlined"
                           size="small"
+                          inputProps={{ min: 0, max: 16 }}
                         />
-                      </Box>
-                    )
-                  )}
-                </>
+                      </Grid>
+                    ))}
+                  </>
+                )}
+              </>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  name="passengers"
+                  type="number"
+                  label="Number of adults"
+                  value={formik.values.passengers}
+                  onChange={formik.handleChange}
+                  error={
+                    formik.touched.passengers &&
+                    Boolean(formik.errors.passengers)
+                  }
+                  helperText={
+                    formik.touched.passengers && formik.errors.passengers
+                  }
+                  variant="outlined"
+                  size="small"
+                  inputProps={{ min: 1, max: 30 }}
+                />
+              </Grid>
+              {formik.errors.totalPassengers && (
+                <Typography color="error">
+                  {formik.errors.totalPassengers}
+                </Typography>
               )}
-            </>
-            <Box mb={3}>
-              <TextField
-                fullWidth
-                name="passengers"
-                type="number"
-                label="Number of adults"
-                value={formik.values.passengers}
-                onChange={formik.handleChange}
-                error={
-                  formik.touched.passengers && Boolean(formik.errors.passengers)
-                }
-                helperText={
-                  formik.touched.passengers && formik.errors.passengers
-                }
-                variant="outlined"
-                size="small"
-              />
-            </Box>
-            <Box mb={3}>
-              <Typography>
-                Adult: {formik.values.passengers} x £
-                {(routePrices[formik.values.route] ?? 0) *
-                  (ticketType === "single" ? 0.7 : 1).toFixed(2)}
-                = £
-                {(routePrices[formik.values.route] ?? 0) *
-                  (ticketType === "single" ? 0.7 : 1).toFixed(2)}
-              </Typography>
-              {formik.values.hasChild === "yes" && (
-                <>
-                  {[...Array(Number(formik.values.childCount) || 0)].map(
-                    (_, index) => {
-                      const childAge =
-                        Number(formik.values[`childAge_${index}`]) || 0;
-                      let childPrice = 0;
+              <Grid item xs={12}>
+                <Typography>
+                  Adult: {formik.values.passengers} x £
+                  {(routePrices[formik.values.route] ?? 0) *
+                    (ticketType === "single" ? 0.7 : 1).toFixed(2)}
+                  = £
+                  {(routePrices[formik.values.route] ?? 0) *
+                    (ticketType === "single" ? 0.7 : 1).toFixed(2)}
+                </Typography>
+                {formik.values.hasChild === "yes" && (
+                  <>
+                    {[...Array(Number(formik.values.childCount) || 0)].map(
+                      (_, index) => {
+                        const childAge =
+                          Number(formik.values[`childAge_${index}`]) || 0;
+                        let childPrice = 0;
 
-                      if (childAge <= 2) {
-                        childPrice = 0;
-                      } else if (childAge >= 3 && childAge <= 10) {
-                        childPrice = 7;
-                      } else if (childAge >= 11 && childAge <= 16) {
-                        childPrice = 10;
+                        if (childAge <= 2) {
+                          childPrice = 0;
+                        } else if (childAge >= 3 && childAge <= 10) {
+                          childPrice = 7;
+                        } else if (childAge >= 11 && childAge <= 16) {
+                          childPrice = 10;
+                        }
+                        return (
+                          <Typography key={index}>
+                            Child {index + 1}(Age: {childAge}): £
+                            {childPrice.toFixed(2)}
+                          </Typography>
+                        );
                       }
-                      return (
-                        <Typography key={index}>
-                          Child {index + 1}(Age: {childAge}): £
-                          {childPrice.toFixed(2)}
-                        </Typography>
-                      );
-                    }
-                  )}
-                </>
-              )}
-              <Typography variant="h6">
-                Total price: £{formik?.values.passengers ? price : 0}
-              </Typography>
-            </Box>
+                    )}
+                  </>
+                )}
+                <Typography variant="h6">
+                  Total price: £{formik?.values.passengers ? price : 0}
+                </Typography>
+              </Grid>
 
-            <Button
-              type="submit"
-              variant="contained"
-              fullWidth
-              style={{ padding: "10 0px", fontSize: "16px" }}
-            >
-              Next
-            </Button>
+              <Grid
+                item
+                xs={12}
+                style={{ display: "flex", justifyContent: "space-between" }}
+              >
+                <Button
+                  type="submit"
+                  variant="contained"
+                  fullWidth
+                  style={{ padding: "10 0px", fontSize: "16px" }}
+                  size="large"
+                >
+                  Next
+                </Button>
+              </Grid>
+            </Grid>
           </form>
         )}
         {step === 1 && (
-          <Box>
+          <Grid item xs={12}>
             <Button
               onClick={() => handlePaymentOption("payOnSite")}
               variant="outlined"
@@ -446,10 +488,10 @@ const BookingForm = ({ resetBookingForm }) => {
             >
               Pay Online
             </Button>
-          </Box>
+          </Grid>
         )}
         {step === 2 && (
-          <Box>
+          <Grid item xs={12}>
             <Typography variant="h5" mb={2}>
               Your Ticket
             </Typography>
@@ -470,7 +512,7 @@ const BookingForm = ({ resetBookingForm }) => {
             <Button onClick={handlePrint} variant="contained">
               Print Ticket
             </Button>
-          </Box>
+          </Grid>
         )}
       </Paper>
       <Snackbar
@@ -493,7 +535,6 @@ const BookingForm = ({ resetBookingForm }) => {
         </Alert>
       </Snackbar>
     </Container>
-    // </Box>
   );
 };
 export default BookingForm;

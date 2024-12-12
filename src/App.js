@@ -7,7 +7,7 @@ import BookingForm from "./bookingForm";
 import { AuthProvider } from "./AuthContext";
 import Employee from "./Employee";
 import FaqPage from "./FAQs";
-import { Box, IconButton } from "@mui/material";
+import { Box, IconButton, useMediaQuery } from "@mui/material";
 
 import { ArrowForward, ArrowBack } from "@mui/icons-material";
 import AboutUs from "./AboutUs";
@@ -15,6 +15,7 @@ import ContactUs from "./ContactUs";
 
 import TimetablePage from "./Timetable";
 import PricePage from "./Price";
+import { useTheme } from "@emotion/react";
 
 function App() {
   // const { currentUser } = useContext(AuthContext);
@@ -23,15 +24,6 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(
     () => !!localStorage.getItem("userToken")
   );
-  // const ProtectedRoute = ({ children, currentUser }) => {
-  //   if (!currentUser) {
-  //     return <Navigate to="/" />;
-  //   }
-  //   if (currentUser.role === "worker") {
-  //     return <Navigate to="/" />;
-  //   }
-  //   return children;
-  // };
 
   useEffect(() => {
     const userToken = localStorage.getItem("userToken");
@@ -78,6 +70,8 @@ function App() {
 
 const HomePage = ({ navbarHeight }) => {
   const [activeIndex, setActiveIndex] = useState(0);
+  // const theme = useTheme();
+  // const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const images = [
     "https://www.tobermory.co.uk/wp-content/uploads/Seahorse-002-scaled.jpg",
@@ -100,41 +94,14 @@ const HomePage = ({ navbarHeight }) => {
     const interval = setInterval(nextSlide, 3000);
     return () => clearInterval(interval);
   }, []);
-
-  // const settings = {
-  //   dots: true,
-  //   infinite: true,
-  //   speed: 500,
-  //   slideToShow: 1,
-  //   slideToRoll: 1,
-  //   autoplay: true,
-  //   autoplaySpeed: 3000,
-  //   beforeChange: (current, next) => setActiveIndex(next),
-  // };
   return (
-    // <div>
-    //   <h1>Home Page</h1>
-    // </div>
-    // <Box sx={{ width: "100%", height: "auto", margin: "0 auto" }}>
-    //   <Slider {...settings}>
-    //     {images.map((image, index) => (
-    //       <div key={index}>
-    //         <img
-    //           src={image}
-    //           alt={`carousel-image${index}`}
-    //           style={{ width: "100%", height: "auto" }}
-    //         ></img>
-    //       </div>
-    //     ))}
-    //   </Slider>
-    // </Box>
-
     <Box
       sx={{
         width: "100%",
-        height: `calc(100vh - ${navbarHeight}px)`,
+        // height: `calc(100vh - ${navbarHeight}px)`,
+        height: `calc(100vh - 64px)`,
         margin: "0 auto",
-        position: "relative",
+        // position: "relative",
         overflow: "hidden",
       }}
     >
@@ -153,6 +120,7 @@ const HomePage = ({ navbarHeight }) => {
           zIndex: 1,
           color: "white",
           backgroundColor: "rgba(0,0,0,0.5)",
+          //display: isMobile ? "none" : "block",
         }}
       >
         <ArrowBack />
@@ -167,6 +135,7 @@ const HomePage = ({ navbarHeight }) => {
           zIndex: 1,
           color: "white",
           backgroundColor: "rgba(0,0,0,0.5)",
+          //display: isMobile ? "none" : "block",
         }}
       >
         <ArrowForward />

@@ -43,7 +43,7 @@ const ContactUs = () => {
 
         <form onSubmit={handleSubmit}>
           <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12} sm={6}>
               <TextField
                 label="Name"
                 variant="outlined"
@@ -55,7 +55,7 @@ const ContactUs = () => {
               />
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12} sm={6}>
               <TextField
                 label="Email"
                 variant="outlined"
@@ -67,7 +67,7 @@ const ContactUs = () => {
                 type="email"
               />
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12}>
               <TextField
                 label="Message"
                 variant="outlined"
@@ -82,7 +82,12 @@ const ContactUs = () => {
             </Grid>
           </Grid>
           <Box mt={3} textAlign="center">
-            <Button type="submit" variant="contained" color="primary">
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              sx={{ padding: "10px 20px" }}
+            >
               Send Message
             </Button>
           </Box>
@@ -91,7 +96,7 @@ const ContactUs = () => {
           <Typography variant="h6" gutterBottom>
             Or you can reach us directly :
           </Typography>
-          <Typography varaint="body1">
+          <Typography variant="body1">
             <strong>Phone:</strong>
             {""}
             <Link href="tel:+123456789" color="inherit">
