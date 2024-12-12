@@ -27,6 +27,7 @@ const Navbar = ({ isLoggedIn, setIsLoggedIn, resetBookingForm }) => {
   const location = useLocation();
   const { currentUser, logout } = useContext(AuthContext);
   const [hover, setHover] = useState(false);
+  const [tooltipOpen, setTooltipOpen] = useState(false);
 
   const handleMouseEnter = () => setHover(true);
   const handleMouseLeave = () => setHover(true);
@@ -44,6 +45,12 @@ const Navbar = ({ isLoggedIn, setIsLoggedIn, resetBookingForm }) => {
     setIsLoggedIn(false);
     //resetBookingForm();
     navigate("/");
+  };
+  const handleTooltipOpen = () => {
+    setTooltipOpen(true);
+  };
+  const handleTooltipClose = () => {
+    setTooltipOpen(false);
   };
 
   const isOnUserPage = location.pathname === "/user";
@@ -119,26 +126,21 @@ const Navbar = ({ isLoggedIn, setIsLoggedIn, resetBookingForm }) => {
             </Grid>
             <Grid item xs>
               <Tooltip
+                open={tooltipOpen}
+                onClose={handleTooltipClose}
+                onOpen={handleTooltipOpen}
                 placement="top"
-                arrow
                 title={
                   !currentUser
                     ? "You need to log in "
-                    : isWorker
+                    : isWorker && isOnEmployeePage
                     ? "You don't have access to booking system "
                     : ""
                 }
-                sx={{ zIndex: 1300 }}
-                // sx={{
-                //   cursor:
-                //     !currentUser || isWorker || isOnEmployeePage
-                //       ? "not-allowed"
-                //       : "pointer",
-                // }}
+                arrow
               >
                 <Button
                   fullWidth
-                  //sx={ButtonBackgroundColor}
                   sx={{
                     cursor:
                       !currentUser || isWorker || isOnEmployeePage
@@ -146,14 +148,11 @@ const Navbar = ({ isLoggedIn, setIsLoggedIn, resetBookingForm }) => {
                         : "pointer",
                   }}
                   color="inherit"
-                  //area-disabled={!currentUser || isWorker}
-                  disabled={!currentUser || isWorker || isOnEmployeePage}
-                  onMouseEnter={handleMouseEnter}
-                  onMouseLeave={handleMouseLeave}
-                  // onClick={() => navigate("/booking")}
+                  area-disabled={!currentUser || isWorker || isOnEmployeePage}
                   onClick={() => {
-                    if (!currentUser) return;
-                    if (!isWorker && currentUser) {
+                    if (!currentUser || isWorker || isOnEmployeePage) return;
+                    if (!isWorker || currentUser) {
+                      //&&
                       navigate("/booking");
                     }
                   }}
