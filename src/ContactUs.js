@@ -11,6 +11,8 @@ import {
   Alert,
   Link,
 } from "@mui/material";
+import { db } from "./firebase";
+import { collection, addDoc } from "firebase/firestore";
 
 const ContactUs = () => {
   const [formData, setFormData] = useState({
@@ -19,7 +21,8 @@ const ContactUs = () => {
     message: "",
   });
   const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessege, setSnackbarMessege] = useState("");
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -28,10 +31,23 @@ const ContactUs = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setSnackbarMessege("Your message has been sent successfully!");
-    setOpenSnackbar(true);
+    try {
+      await addDoc(collection(db, "messages"), {
+        name: formData.name,
+        email: formData.email,
+        message: formData.message,
+        timestamp: new Date(),
+      });
+      setSnackbarMessage("Your message has been sent successfully!");
+      setOpenSnackbar(true);
+      setFormData({ name: "", email: "", message: "" });
+    } catch (error) {
+      console.error("Error adding document: ", error);
+      setSnackbarMessage("Failed to send message. Please try again.");
+      setOpenSnackbar(true);
+    }
   };
 
   return (
@@ -131,7 +147,7 @@ const ContactUs = () => {
             mt: "70px",
           }}
         >
-          {snackbarMessege}
+          {snackbarMessage}
         </Alert>
       </Snackbar>
     </Container>

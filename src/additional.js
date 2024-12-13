@@ -105,7 +105,7 @@ export default function register() {
         await registerUser(values);
         resetForm();
       } catch (err) {
-        console.error("Error adding document: ", err);
+        //console.error("Error adding document: ", err);
         alert("Failed to submit form. Try again.");
       }
     },

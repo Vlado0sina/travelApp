@@ -22,6 +22,7 @@ import { db } from "./firebase";
 import { collection, addDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { FormatLineSpacing } from "@mui/icons-material";
+import PaymentForm from "./Pay";
 
 const steps = ["Route information", "Payment", "Your ticket"];
 
@@ -33,7 +34,7 @@ const routePrices = {
   "Eigg - Rum": 16,
 };
 
-const BookingForm = ({ resetBookingForm }) => {
+const BookingForm = ({ validateForm }) => {
   const navigate = useNavigate();
   const { currentUser, logout } = useContext(AuthContext);
   const [openSnackBar, setOpenSnackBar] = useState(false);
@@ -41,6 +42,12 @@ const BookingForm = ({ resetBookingForm }) => {
   const [ticketData, setTicketData] = useState(null);
   const [ticketType, setTicketType] = useState("return");
   const [price, setPrice] = useState(0);
+  const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [paymentConfirmed, setPaymentConfirmed] = useState(false);
+
+  // const changePaymentConfirmed = (newState) => {
+  //   setPaymentConfirmed(newState);
+  // };
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -142,9 +149,14 @@ const BookingForm = ({ resetBookingForm }) => {
   };
 
   const handlePaymentOption = async (option) => {
-    if ((option = "payOnSite")) {
+    if (option === "payOnSite") {
       handleBooking();
     } else if (option === "payOnline") {
+      setShowPaymentForm(true);
+      if (validateForm) {
+        handleBooking();
+        formik.resetForm();
+      }
     }
   };
   const handleBooking = async () => {
@@ -189,6 +201,12 @@ const BookingForm = ({ resetBookingForm }) => {
   //       </Grid>
   //     );
   //   }
+  const handlePaymentSuccess = () => {
+    setPaymentConfirmed(true);
+    handleBooking();
+    formik.resetForm();
+  };
+
   return (
     <Container maxWidth="sm" style={{ marginTop: "30px" }}>
       <Paper elevation={3} style={{ padding: "20px" }}>
@@ -488,6 +506,10 @@ const BookingForm = ({ resetBookingForm }) => {
             >
               Pay Online
             </Button>
+            {showPaymentForm && (
+              // <PaymentForm onSuccess={handlePaymentSuccess} price={price} />
+              <PaymentForm onClick={() => handlePaymentOption("payOnline")} />
+            )}
           </Grid>
         )}
         {step === 2 && (

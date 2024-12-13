@@ -16,8 +16,41 @@ import {
   Card,
   CardContent,
   Grid,
+  MenuItem,
 } from "@mui/material";
+import * as yup from "yup";
+import { useFormik } from "formik";
 
+const validationSchema = yup.object({
+  firstName: yup
+    .string()
+    .matches(/^[a-zA-Z]+$/, "Only latin letters are allowed")
+    .required("First Name is required"),
+  lastName: yup
+    .string()
+    .matches(/^[a-zA-Z]+$/, "Only latin letters are allowed")
+    .required("Last Name is required"),
+  phone: yup
+    .string()
+    .matches(
+      /^(\+\d{1,3}[- ]?)?\d{10}$/,
+      "Phone number must be valid and contain 10 digits"
+    )
+    .required("Phone Number is required"),
+  email: yup
+    .string()
+    .email("Enter a valid email")
+    .required("Email is required"),
+  date: yup
+    .date()
+    .required("Date required")
+    .min(new Date(), "Date can not be in the past"),
+  passengers: yup
+    .number()
+    .required("Passengers are required")
+    .min(1, "There must be at least 1 passenger")
+    .max(30, "Maximum 30 passengers allowed"),
+});
 const UserPage = () => {
   const { currentUser } = useContext(AuthContext);
   const [bookings, setBookings] = useState([]);
@@ -26,6 +59,7 @@ const UserPage = () => {
   const [updatedBooking, setUpdatedBooking] = useState(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [errors, setErrors] = useState({});
   useEffect(() => {
     if (!currentUser) {
       setLoading(false);
@@ -49,43 +83,71 @@ const UserPage = () => {
   const handleDelete = async (id) => {
     try {
       await deleteBooking(id);
-      setBookings(bookings.filter((booking) => booking.id !== id));
+      setBookings((prevBookings) =>
+        prevBookings.filter((booking) => booking.id !== id)
+      );
       setSnackbarMessage("Booking deleted successfully");
       setSnackbarOpen(true);
     } catch (error) {
       console.error("Error deleting booking", error);
     }
   };
-
   const handleEdit = (booking) => {
     setEditBooking(booking);
-    setUpdatedBooking({ ...booking });
+    formik.setValues(booking);
   };
-  const handleUpdate = async () => {
-    try {
-      await updateBooking(editingBooking.id, updatedBooking);
-      setBookings(
-        bookings.map((booking) =>
-          booking.id === editingBooking.id ? updatedBooking : booking
-        )
-      );
-      setSnackbarMessage("Booking updated successfully");
-      setSnackbarOpen(true);
-    } catch (error) {
-      console.error("Error updating", error);
-    } finally {
-      setEditBooking(null);
-    }
-  };
-
   const handleCancleEdit = () => {
     setEditBooking(null);
+    formik.resetForm();
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setUpdatedBooking((prev) => ({ ...prev, [name]: value }));
-  };
+  const formik = useFormik({
+    initialValues: editingBooking || {
+      firstName: "",
+      lastName: "",
+      phoneNumber: "",
+      email: "",
+      date: "",
+      passengers: 1,
+      route: "",
+    },
+    validationSchema,
+    enableReinitialize: true,
+    onSubmit: async (values) => {
+      console.log("Form is being submitted");
+      if (!editingBooking?.id) {
+        console.log("Editing booking is not defined ");
+        return;
+      }
+      console.log("Submitting form values: ", values);
+      try {
+        await updateBooking(editingBooking.id, values);
+        setBookings((prevBookings) =>
+          prevBookings.map((booking) =>
+            booking.id === editingBooking.id
+              ? { ...booking, ...values }
+              : booking
+          )
+        );
+
+        setSnackbarMessage("Booking updated successfully");
+        setSnackbarOpen(true);
+        setEditBooking(null);
+        formik.resetForm();
+      } catch (error) {
+        if (error.name === "ValidationError") {
+          const validationErrors = {};
+          error.inner.forEach((err) => {
+            validationErrors[err.path] = err.message;
+          });
+
+          setErrors(validationErrors);
+        } else {
+          console.error("Error updating", error);
+        }
+      }
+    },
+  });
 
   const handleSnackbarClose = () => {
     setSnackbarOpen(false);
@@ -107,58 +169,121 @@ const UserPage = () => {
             sx={{ display: "flex", justifyContent: "center", padding: 2 }}
           >
             {editingBooking?.id === booking.id ? (
-              <Box>
-                <TextField
-                  label="Fist Name"
-                  value={updatedBooking.firstName}
-                  name="firstName"
-                  onChange={handleInputChange}
-                  fullWidth
-                />
-                <TextField
-                  label="Last Name"
-                  value={updatedBooking.lastName}
-                  name="lastName"
-                  onChange={handleInputChange}
-                  fullWidth
-                />
-                <TextField
-                  label="Phone"
-                  value={updatedBooking.phone}
-                  name="phone"
-                  onChange={handleInputChange}
-                  fullWidth
-                />
-                <TextField
-                  label="Route"
-                  value={updatedBooking.route}
-                  name="route"
-                  onChange={handleInputChange}
-                  fullWidth
-                />
-                <TextField
-                  label="Date"
-                  value={updatedBooking.date}
-                  name="date"
-                  onChange={handleInputChange}
-                  fullWidth
-                />
-                <TextField
-                  label="Passengers"
-                  value={updatedBooking.passengers}
-                  name="passengers"
-                  onChange={handleInputChange}
-                  fullWidth
-                />
-                <Box mt={2}>
-                  <Button color="primary" onClick={handleUpdate}>
-                    Save Changes
-                  </Button>
-                  <Button color="secondary" onClick={handleCancleEdit}>
-                    Cancel
-                  </Button>
-                </Box>
-              </Box>
+              <form onSubmit={formik.handleSubmit}>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      label="Fist Name"
+                      value={formik.values.firstName}
+                      name="firstName"
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                      error={
+                        formik.touched.firstName &&
+                        Boolean(formik.errors.firstName)
+                      }
+                      helperText={
+                        formik.touched.firstName && formik.errors.firstName
+                      }
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      label="Last Name"
+                      value={formik.values.lastName}
+                      name="lastName"
+                      fullWidth
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                      error={
+                        formik.touched.lastName &&
+                        Boolean(formik.errors.lastName)
+                      }
+                      helperText={
+                        formik.touched.lastName && formik.errors.lastName
+                      }
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      label="Phone"
+                      value={formik.values.phone}
+                      name="phone"
+                      fullWidth
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                      error={
+                        formik.touched.phone && Boolean(formik.errors.phone)
+                      }
+                      helperText={formik.touched.phone && formik.errors.phone}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      select
+                      name="route"
+                      label="Route"
+                      value={formik.values.route}
+                      fullWidth
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                      error={
+                        formik.touched.route && Boolean(formik.errors.route)
+                      }
+                      helperText={formik.touched.route && formik.errors.route}
+                    >
+                      <MenuItem value="Mallaig - Eigg">Mallaig - Eigg</MenuItem>
+                      <MenuItem value="Mallaig - Rum">Mallaig - Rum</MenuItem>
+                      <MenuItem value="Mallaig - Muck">Mallaig - Muck</MenuItem>
+                      <MenuItem value="Mallaig - Muck">Eigg - Muck</MenuItem>
+                      <MenuItem value="Mallaig - Muck">Eigg - Rum</MenuItem>
+                    </TextField>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      label="Date"
+                      type="date"
+                      value={formik.values.date}
+                      name="date"
+                      fullWidth
+                      inputProps={{ shrink: true }}
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                      error={formik.touched.date && Boolean(formik.errors.date)}
+                      helperText={formik.touched.date && formik.errors.date}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      label="Passengers"
+                      value={formik.values.passengers}
+                      name="passengers"
+                      fullWidth
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                      error={
+                        formik.touched.passengers &&
+                        Boolean(formik.errors.passengers)
+                      }
+                      helperText={
+                        formik.touched.passengers && formik.errors.passengers
+                      }
+                    />
+                  </Grid>
+                  <Box mt={2}>
+                    <Button
+                      type="submit"
+                      color="primary"
+                      disabled={formik.isSubmitting || !formik.isValid}
+                    >
+                      Save Changes
+                    </Button>
+                    <Button color="secondary" onClick={handleCancleEdit}>
+                      Cancel
+                    </Button>
+                  </Box>
+                </Grid>
+              </form>
             ) : (
               <Box
                 sx={{

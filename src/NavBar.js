@@ -15,7 +15,7 @@ import {
   ListItemText,
   MenuItem,
 } from "@mui/material";
-//import MenuIcon from "@mui/icons-material/Menu";
+import MenuIcon from "@mui/icons-material/Menu";
 
 import CloseIcon from "@mui/icons-material/Close";
 import MuiTabs from "./Tabs";
@@ -92,9 +92,11 @@ const Navbar = ({ isLoggedIn, setIsLoggedIn, resetBookingForm }) => {
             color="inherit"
             aria-label="menu"
             onClick={() => setDrawerOpen(true)}
-            sx={{ display: { xs: "block", sm: "none" } }}
+            sx={{
+              display: { xs: "block", sm: "none" },
+            }}
           >
-            <MenuItem />
+            <MenuIcon />
           </IconButton>
 
           <Grid
@@ -260,6 +262,22 @@ const Navbar = ({ isLoggedIn, setIsLoggedIn, resetBookingForm }) => {
             </ListItemButton>
             <ListItemButton button onClick={() => navigate("/price")}>
               <ListItemText primary="Pricing"></ListItemText>
+            </ListItemButton>
+            <ListItemButton
+              button
+              onClick={() => {
+                if (!isLoggedIn) {
+                  alert(
+                    "You need to be logged in to access the booking system"
+                  );
+                } else if (currentUser?.role === "worker" || isOnEmployeePage) {
+                  alert("You don't have access to booking system as a worker");
+                } else {
+                  navigate("/booking");
+                }
+              }}
+            >
+              <ListItemText primary="Booking"></ListItemText>
             </ListItemButton>
             <ListItemButton
               button
